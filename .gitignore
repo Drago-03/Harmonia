@@ -1,1 +1,19 @@
 node_modules
+
+# Virtual environment
+venv/
+env/
+
+# Environment variables
+*.env
+.env
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+
+# Logs and databases
+*.sqlite3
+*.db
+*.log
