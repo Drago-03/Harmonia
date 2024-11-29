@@ -1,0 +1,12 @@
+# Discord Music Bot Requirements
+# Created by Drago
+
+# Core Dependencies
+discord.js>=14.11.0
+play-dl>=1.9.6
+genius-lyrics>=4.4.3
+dotenv>=16.0.3
+nodemon>=2.0.22
+
+# Optional Dependencies
+# Add any additional dependencies here

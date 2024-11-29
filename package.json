@@ -1,17 +1,21 @@
 {
-  "name": "discord-music-bot",
+  "name": "harmonia",
   "version": "1.0.0",
+  "description": "Discord Music Bot",
+  "main": "index.js",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "discord.js": "^14.11.0",
-    "play-dl": "^1.9.6",
-    "genius-lyrics": "^4.4.3",
     "dotenv": "^16.0.3",
-    "nodemon": "^2.0.22"
+    "genius-lyrics": "^4.4.3",
+    "play-dl": "^1.9.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
