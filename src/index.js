@@ -27,7 +27,7 @@ async function initializeBot() {
         GatewayIntentBits.MessageContent
       ],
       failIfNotExists: false,
-      retryLimit: 3
+      retryLimit: 5
     });
 
     // Initialize collections
@@ -57,7 +57,7 @@ async function initializeBot() {
         logger.info('Bot logged in successfully');
       },
       {
-        retries: 3,
+        retries: 5,
         onFailedAttempt: error => {
           logger.warn(
             `Login attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`

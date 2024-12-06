@@ -194,4 +194,58 @@ export class MusicPlayer {
     // This would require proper Spotify API credentials
     return null;
   }
+
+async loadPlaylist(url, userId) {
+  try {
+    const playlist = await play.playlist_info(url);
+    const videos = await playlist.all_videos();
+    
+    for (const video of videos) {
+      this.queue.push({
+        title: video.title,
+        url: video.url,
+        duration: video.durationInSec,
+        requestedBy: userId
+      });
+    }
+    
+    return {
+      title: playlist.title,
+      count: videos.length
+    };
+  } catch (error) {
+    logger.error(`Error loading playlist: ${error.message}`);
+    throw error;
+  }
+}
+
+shuffle() {
+  for (let i = this.queue.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [this.queue[i], this.queue[j]] = [this.queue[j], this.queue[i]];
+  }
+}
+
+formatDuration(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+getProgress() {
+  if (!this.startTime || !this.currentSong) return null;
+  
+  const elapsed = (Date.now() - this.startTime) / 1000;
+  const total = this.currentSong.duration;
+  const progress = Math.min(elapsed / total, 1);
+  
+  const progressBar = '▬'.repeat(20);
+  const position = Math.floor(progress * 20);
+  
+  return {
+    bar: progressBar.slice(0, position) + '🔘' + progressBar.slice(position + 1),
+    elapsed: this.formatDuration(Math.floor(elapsed)),
+    total: this.formatDuration(total)
+    };
+  }
 }
