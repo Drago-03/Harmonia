@@ -10,7 +10,7 @@ A feature-rich Discord music bot with real-time lyrics synchronization, created 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D%2016.0.0-brightgreen)](https://nodejs.org/)
 [![Author](https://img.shields.io/badge/author-Drago-purple)](https://github.com/Drago)
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289DA)](https://discord.gg/your-server)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289DA)](https://discord.com/invite/9bPsjgnJ5v)
 
 ## 🌟 Features
 
