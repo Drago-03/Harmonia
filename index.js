@@ -34,8 +34,10 @@ const client = new Client({
 });
 
 client.commands = new Collection();
+client.prefixCommands = new Collection();
+const prefix = 'h!';
 
-// Load commands
+// Load slash commands
 const commandsPath = join(__dirname, 'commands');
 const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
@@ -47,6 +49,21 @@ for (const file of commandFiles) {
     client.commands.set(command.default.data.name, command.default);
   } else {
     console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+  }
+}
+
+// Load prefix commands
+const prefixCommandsPath = join(__dirname, 'prefixCommands');
+const prefixCommandFiles = readdirSync(prefixCommandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of prefixCommandFiles) {
+  const filePath = join(prefixCommandsPath, file);
+  const command = await import(filePath);
+  
+  if ('name' in command.default && 'execute' in command.default) {
+    client.prefixCommands.set(command.default.name, command.default);
+  } else {
+    console.log(`[WARNING] The command at ${filePath} is missing a required "name" or "execute" property.`);
   }
 }
 
@@ -64,6 +81,25 @@ for (const file of eventFiles) {
     client.on(event.default.name, (...args) => event.default.execute(...args));
   }
 }
+
+// Handle message events for prefix commands
+client.on('messageCreate', async message => {
+  if (!message.content.startsWith(prefix) || message.author.bot) return;
+
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const commandName = args.shift().toLowerCase();
+
+  const command = client.prefixCommands.get(commandName);
+
+  if (!command) return;
+
+  try {
+    await command.execute(message, args);
+  } catch (error) {
+    console.error(error);
+    message.reply('There was an error executing that command!');
+  }
+});
 
 // Login to Discord
 client.login(process.env.DISCORD_TOKEN).catch(error => {
