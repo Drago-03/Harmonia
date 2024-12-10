@@ -73,7 +73,7 @@ async function getHistoricalFacts(era) {
         '60s': ['The Beatles appeared on Ed Sullivan in 1964.'],
         '70s': ['Disco emerged as a major genre in 1974.'],
         '80s': ['MTV launched on August 1, 1981.'],
-        '90s': ['Nirvana's "Nevermind" topped charts in 1991.'],
+        '90s': ['Nirvana\'s "Nevermind" topped charts in 1991.'],
         '00s': ['iPod was released in 2001, revolutionizing music.']
     };
     return facts[era] || ['Loading historical facts...'];
