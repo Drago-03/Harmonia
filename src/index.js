@@ -12,19 +12,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function initializeBot() {
   try {
-    // Validate configuration
     validateConfig();
-
-    // Create logs directory
     await mkdir(join(__dirname, '../logs'), { recursive: true });
 
-    // Initialize Discord client
     const client = new Client({
       intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent
+        GatewayIntentBits.GuildMessages
       ],
       failIfNotExists: false,
       retryLimit: 5
@@ -33,45 +28,54 @@ async function initializeBot() {
     // Initialize collections
     client.commands = new Collection();
     client.musicQueues = new Map();
+    client.groups = new Map();
+    client.syncSessions = new Map();
+    client.sharedContent = new Map();
+    client.voteManager = new Map();
 
     // Register commands and load events with retry
     await pRetry(
       async () => {
         await registerCommands();
         loadEvents(client);
+        logger.info('Commands and events loaded successfully');
       },
       {
         retries: 3,
         onFailedAttempt: error => {
           logger.warn(
-            `Attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`
+            `Registration attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`
           );
         }
       }
     );
 
-    // Login to Discord with retry
+    // Login to Discord
     await pRetry(
       async () => {
         await client.login(CONFIG.DISCORD_TOKEN);
-        logger.info('Bot logged in successfully');
+        logger.info(`Bot logged in as ${client.user.tag}`);
+        logger.info(`Loaded ${client.commands.size} commands`);
+        logger.info(`Active in ${client.guilds.cache.size} servers`);
       },
       {
         retries: 5,
         onFailedAttempt: error => {
-          logger.warn(
-            `Login attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`
-          );
+          logger.error('Login failed:', error);
         }
       }
     );
 
-    // Handle process errors
-    process.on('unhandledRejection', (error) => {
+    // Error handling
+    client.on('error', error => {
+      logger.error('Client error:', error);
+    });
+
+    process.on('unhandledRejection', error => {
       logger.error('Unhandled promise rejection:', error);
     });
 
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', error => {
       logger.error('Uncaught exception:', error);
       process.exit(1);
     });
