@@ -1,11 +1,11 @@
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import activityManager from '../utils/ActivityManager.js';
 import premiumManager from '../utils/PremiumManager.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('play')
-        .setDescription('Start a music session')
+        .setDescription('Start a music activity session')
         .addStringOption(option =>
             option
                 .setName('query')
@@ -13,67 +13,49 @@ export default {
                 .setRequired(true)),
 
     async execute(interaction) {
+        if (!interaction.member.voice.channel) {
+            return await interaction.reply({
+                content: 'You need to be in a voice channel first!',
+                ephemeral: true
+            });
+        }
+
         try {
-            // Check if user is in voice channel
-            if (!interaction.member.voice.channel) {
-                return await interaction.reply('Join a voice channel first!');
-            }
-
-            // Create or join session
-            const existingSession = activityManager.sessions.find(s => 
-                s.guildId === interaction.guildId);
-
-            if (existingSession) {
-                await activityManager.joinSession(existingSession.id, interaction.user.id);
-                return await interaction.reply({
-                    content: 'Joined existing session!',
-                    components: [createActivityButton(existingSession.activityInvite)]
-                });
-            }
-
-            // Create new session
             const session = await activityManager.createSession(
-                interaction.user, 
+                interaction.user,
                 interaction.guildId
             );
 
-            const embed = {
-                title: '🎵 Music Session Started',
-                description: 'Click below to join the music party!',
-                fields: [
-                    {
-                        name: 'Host',
-                        value: interaction.user.tag,
-                        inline: true
-                    },
-                    {
-                        name: 'Participants',
-                        value: `1/${activityManager.MAX_PARTICIPANTS}`,
-                        inline: true
-                    }
-                ]
-            };
+            const embed = new EmbedBuilder()
+                .setTitle('🎵 Music Session Started')
+                .setDescription(`Click below to join the party! (${session.participants.size}/${activityManager.MAX_PARTICIPANTS} participants)`)
+                .addFields(
+                    { name: 'Host', value: interaction.user.tag, inline: true },
+                    { name: 'Duration', value: '2 hours', inline: true }
+                )
+                .setColor('#00ff00');
+
+            const components = [{
+                type: 1,
+                components: [{
+                    type: 2,
+                    style: 5,
+                    label: 'Join Session',
+                    url: session.activityInvite.url
+                }]
+            }];
 
             await interaction.reply({
                 embeds: [embed],
-                components: [createActivityButton(session.activityInvite)]
+                components: components
             });
 
         } catch (error) {
             console.error('Play command error:', error);
-            await interaction.reply('Failed to start music session');
+            await interaction.reply({
+                content: 'Failed to start music session',
+                ephemeral: true
+            });
         }
     }
 };
-
-function createActivityButton(invite) {
-    return {
-        type: 1,
-        components: [{
-            type: 2,
-            label: 'Join Session',
-            style: 5,
-            url: invite.url
-        }]
-    };
-}
