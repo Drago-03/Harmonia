@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from 'discord.js';
-import premiumManager from '../utils/Premiummanager.js';
+import premiumManager from '../utils/PremiumManager.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -34,3 +34,14 @@ export default {
     await interaction.reply({ embeds: [embed] });
   },
 };
+
+class PremiumManager {
+    // ...existing code
+
+    getParticipantLimit(userId, guildId) {
+        if (this.isPremiumServer(guildId) || this.isPremiumUser(userId)) {
+            return CONFIG.PREMIUM_LIMITS.PREMIUM_PARTICIPANTS;
+        }
+        return CONFIG.PREMIUM_LIMITS.DEFAULT_PARTICIPANTS;
+    }
+}

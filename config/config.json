@@ -1,0 +1,10 @@
+{
+    "token": "YOUR_BOT_TOKEN",
+    "clientId": "YOUR_CLIENT_ID",
+    "guildId": "YOUR_GUILD_ID",
+    "activityAppId": "YOUR_ACTIVITY_APP_ID",
+    "maxParticipants": {
+      "default": 10,
+      "premium": 20
+    }
+  }
