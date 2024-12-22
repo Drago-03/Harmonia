@@ -1,6 +1,8 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import activityManager from '../utils/ActivityManager.js';
 import premiumManager from '../utils/PremiumManager.js';
+import { Collection } from 'discord.js';
+
 
 export default {
     data: new SlashCommandBuilder()
@@ -59,3 +61,45 @@ export default {
         }
     }
 };
+class ActivityManager {
+    constructor() {
+        this.sessions = new Map();
+        this.MAX_PARTICIPANTS = 20;
+        this.DEFAULT_TIMEOUT = 7200000; // 2 hours
+    }
+
+    async createSession(user, guildId) {
+        const sessionId = `music_${Date.now()}_${user.id}`;
+        
+        try {
+            // Create DM channel activity session
+            const dmChannel = await user.createDM();
+            const activityInvite = await dmChannel.createInvite({
+                maxAge: 7200,
+                maxUses: this.MAX_PARTICIPANTS,
+                targetType: 2,
+                targetApplication: process.env.ACTIVITY_APP_ID || '773336526917861400'
+            });
+
+            const session = {
+                id: sessionId,
+                hostId: user.id,
+                guildId: guildId,
+                participants: new Set([user.id]),
+                activityInvite,
+                createdAt: Date.now(),
+                timeout: setTimeout(() => this.endSession(sessionId), this.DEFAULT_TIMEOUT)
+            };
+
+            this.sessions.set(sessionId, session);
+            return session;
+        } catch (error) {
+            console.error('Session creation error:', error);
+            throw error;
+        }
+    }
+
+    // ...existing code...
+}
+
+export const activityManagerInstance = new ActivityManager();

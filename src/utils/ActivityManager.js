@@ -11,12 +11,13 @@ class ActivityManager {
         const sessionId = `music_${Date.now()}_${user.id}`;
         
         try {
+            // Create DM channel activity session
             const dmChannel = await user.createDM();
             const activityInvite = await dmChannel.createInvite({
                 maxAge: 7200,
                 maxUses: this.MAX_PARTICIPANTS,
                 targetType: 2,
-                targetApplication: process.env.ACTIVITY_APP_ID
+                targetApplication: process.env.ACTIVITY_APP_ID || '773336526917861400'
             });
 
             const session = {
