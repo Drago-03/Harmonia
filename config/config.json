@@ -3,6 +3,8 @@
   "clientId": "YOUR_CLIENT_ID",
   "guildId": "YOUR_GUILD_ID",
   "activityAppId": "YOUR_ACTIVITY_APP_ID",
+  "spotifyClientId": "YOUR_SPOTIFY_CLIENT_ID",
+  "spotifyClientSecret": "YOUR_SPOTIFY_CLIENT_SECRET",
   "maxParticipants": {
     "default": 5,
     "premium": 20
