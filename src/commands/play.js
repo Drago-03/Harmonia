@@ -1,8 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import activityManager from '../utils/ActivityManager.js';
-import premiumManager from '../utils/PremiumManager.js';
-import { Collection } from 'discord.js';
-
 
 export default {
     data: new SlashCommandBuilder()
@@ -98,8 +95,6 @@ class ActivityManager {
             throw error;
         }
     }
-
-    // ...existing code...
 }
 
 export const activityManagerInstance = new ActivityManager();
