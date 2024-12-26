@@ -31,12 +31,6 @@ async function initializeBot() {
 
     // Initialize collections
     client.commands = new Collection();
-    client.musicQueues = new Map();
-    client.groups = new Map();
-    client.syncSessions = new Map();
-    client.sharedContent = new Map();
-    client.voteManager = new Map();
-
     const commandsPath = path.join(__dirname, 'commands');
     const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
