@@ -1,9 +1,10 @@
 import { Collection } from 'discord.js';
+import config from '../config/config.json';
 
 class ActivityManager {
     constructor() {
         this.sessions = new Map();
-        this.MAX_PARTICIPANTS = 20;
+        this.MAX_PARTICIPANTS = config.maxParticipants.premium;
         this.DEFAULT_TIMEOUT = 7200000; // 2 hours
     }
 
@@ -17,7 +18,7 @@ class ActivityManager {
                 maxAge: 7200,
                 maxUses: this.MAX_PARTICIPANTS,
                 targetType: 2,
-                targetApplication: process.env.ACTIVITY_APP_ID || '773336526917861400'
+                targetApplication: config.activityAppId
             });
 
             const session = {
