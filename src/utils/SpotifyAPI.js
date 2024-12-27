@@ -28,7 +28,7 @@ class SpotifyAPI {
         return this.token;
     }
 
-    async getUserTopArtists(userId) {
+    async getUserTopArtists() {
         const token = await this.getToken();
         const response = await axios.get(`https://api.spotify.com/v1/me/top/artists`, {
             headers: {
@@ -38,7 +38,7 @@ class SpotifyAPI {
         return response.data.items;
     }
 
-    async getUserTopTracks(userId) {
+    async getUserTopTracks() {
         const token = await this.getToken();
         const response = await axios.get(`https://api.spotify.com/v1/me/top/tracks`, {
             headers: {
@@ -48,7 +48,7 @@ class SpotifyAPI {
         return response.data.items;
     }
 
-    async getUserPlaylists(userId) {
+    async getUserPlaylists() {
         const token = await this.getToken();
         const response = await axios.get(`https://api.spotify.com/v1/me/playlists`, {
             headers: {
