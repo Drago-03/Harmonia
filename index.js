@@ -1,6 +1,5 @@
 /**
  * Discord Music Bot with Synchronized Lyrics
- * @author Drago
  * @version 1.0.0
  */
 
@@ -9,6 +8,10 @@ import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { readdirSync } from 'fs';
+import logger from './utils/logger.js';
+import { registerCommands } from './utils/commandHandler.js';
+import { validateConfig, CONFIG } from './utils/config.js';
+import pRetry from 'p-retry';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -16,93 +19,85 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 config();
 
 // Validate required environment variables
-const requiredEnvVars = ['DISCORD_TOKEN', 'GENIUS_API_KEY', 'CLIENT_ID', 'GUILD_ID'];
-for (const envVar of requiredEnvVars) {
-  if (!process.env[envVar]) {
-    console.error(`Error: ${envVar} is not set in the .env file`);
-    process.exit(1);
-  }
-}
+validateConfig();
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.DirectMessages
+    ]
 });
 
 client.commands = new Collection();
-client.prefixCommands = new Collection();
-const prefix = 'h!';
 
-// Load slash commands
-const commandsPath = join(__dirname, 'commands');
-const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of commandFiles) {
-  const filePath = join(commandsPath, file);
-  const command = await import(filePath);
-  
-  if ('data' in command.default && 'execute' in command.default) {
-    client.commands.set(command.default.data.name, command.default);
-  } else {
-    console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
-  }
-}
-
-// Load prefix commands
-const prefixCommandsPath = join(__dirname, 'prefixCommands');
-const prefixCommandFiles = readdirSync(prefixCommandsPath).filter(file => file.endsWith('.js'));
-
-for (const file of prefixCommandFiles) {
-  const filePath = join(prefixCommandsPath, file);
-  const command = await import(filePath);
-  
-  if ('name' in command.default && 'execute' in command.default) {
-    client.prefixCommands.set(command.default.name, command.default);
-  } else {
-    console.log(`[WARNING] The command at ${filePath} is missing a required "name" or "execute" property.`);
-  }
-}
-
-// Load events
-const eventsPath = join(__dirname, 'events');
-const eventFiles = readdirSync(eventsPath).filter(file => file.endsWith('.js'));
-
-for (const file of eventFiles) {
-  const filePath = join(eventsPath, file);
-  const event = await import(filePath);
-  
-  if (event.default.once) {
-    client.once(event.default.name, (...args) => event.default.execute(...args));
-  } else {
-    client.on(event.default.name, (...args) => event.default.execute(...args));
-  }
-}
-
-// Handle message events for prefix commands
-client.on('messageCreate', async message => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const commandName = args.shift().toLowerCase();
-
-  const command = client.prefixCommands.get(commandName);
-
-  if (!command) return;
-
-  try {
-    await command.execute(message, args);
-  } catch (error) {
-    console.error(error);
-    message.reply('There was an error executing that command!');
-  }
+client.once('ready', () => {
+    logger.info('Bot is ready!');
 });
 
-// Login to Discord
-client.login(process.env.DISCORD_TOKEN).catch(error => {
-  console.error('Failed to login to Discord:', error);
-  process.exit(1);
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+
+    const command = client.commands.get(interaction.commandName);
+
+    if (!command) return;
+
+    try {
+        await command.execute(interaction);
+    } catch (error) {
+        logger.error('Command execution error:', error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
 });
+
+async function initializeBot() {
+    try {
+        await pRetry(
+            async () => {
+                await registerCommands(client);
+                logger.info('Commands and events loaded successfully');
+            },
+            {
+                retries: 3,
+                onFailedAttempt: error => {
+                    logger.warn(`Registration attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`);
+                }
+            }
+        );
+
+        await pRetry(
+            async () => {
+                await client.login(CONFIG.DISCORD_TOKEN);
+                logger.info(`Bot logged in as ${client.user.tag}`);
+                logger.info(`Loaded ${client.commands.size} commands`);
+                logger.info(`Active in ${client.guilds.cache.size} servers`);
+            },
+            {
+                retries: 5,
+                onFailedAttempt: error => {
+                    logger.warn(`Login attempt ${error.attemptNumber} failed. ${error.retriesLeft} retries left.`);
+                }
+            }
+        );
+
+        client.on('error', error => {
+            logger.error('Client error:', error);
+        });
+
+        process.on('unhandledRejection', error => {
+            logger.error('Unhandled promise rejection:', error);
+        });
+
+        process.on('uncaughtException', error => {
+            logger.error('Uncaught exception:', error);
+            process.exit(1);
+        });
+
+    } catch (error) {
+        logger.error('Failed to initialize bot:', error);
+        process.exit(1);
+    }
+}
+
+initializeBot();
