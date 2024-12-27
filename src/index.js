@@ -24,9 +24,7 @@ async function initializeBot() {
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.DirectMessages
-      ],
-      failIfNotExists: false,
-      retryLimit: 5
+      ]
     });
 
     // Initialize collections
