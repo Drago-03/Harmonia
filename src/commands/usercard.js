@@ -8,12 +8,10 @@ export default {
 
     async execute(interaction) {
         try {
-            const userId = interaction.user.id;
-
             const [topArtists, topTracks, playlists] = await Promise.all([
-                spotifyAPI.getUserTopArtists(userId),
-                spotifyAPI.getUserTopTracks(userId),
-                spotifyAPI.getUserPlaylists(userId)
+                spotifyAPI.getUserTopArtists(),
+                spotifyAPI.getUserTopTracks(),
+                spotifyAPI.getUserPlaylists()
             ]);
 
             const embed = new EmbedBuilder()
