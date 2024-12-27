@@ -1,5 +1,5 @@
 import axios from 'axios';
-import config from '../config/config.json';
+import { CONFIG } from './config.js';
 
 class SpotifyAPI {
     constructor() {
@@ -12,7 +12,7 @@ class SpotifyAPI {
             grant_type: 'client_credentials'
         }), {
             headers: {
-                'Authorization': `Basic ${Buffer.from(`${config.spotifyClientId}:${config.spotifyClientSecret}`).toString('base64')}`,
+                'Authorization': `Basic ${Buffer.from(`${CONFIG.SPOTIFY_CLIENT_ID}:${CONFIG.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
@@ -30,7 +30,7 @@ class SpotifyAPI {
 
     async getUserTopArtists() {
         const token = await this.getToken();
-        const response = await axios.get(`https://api.spotify.com/v1/me/top/artists`, {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -40,7 +40,7 @@ class SpotifyAPI {
 
     async getUserTopTracks() {
         const token = await this.getToken();
-        const response = await axios.get(`https://api.spotify.com/v1/me/top/tracks`, {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -50,7 +50,7 @@ class SpotifyAPI {
 
     async getUserPlaylists() {
         const token = await this.getToken();
-        const response = await axios.get(`https://api.spotify.com/v1/me/playlists`, {
+        const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
