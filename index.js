@@ -12,6 +12,7 @@ import logger from './utils/logger.js';
 import { registerCommands } from './utils/commandHandler.js';
 import { validateConfig, CONFIG } from './utils/config.js';
 import pRetry from 'p-retry';
+import database from './utils/Database.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -39,8 +40,9 @@ for (const file of commandFiles) {
     client.commands.set(command.default.data.name, command.default);
 }
 
-client.once('ready', () => {
+client.once('ready', async () => {
     logger.info('Bot is ready!');
+    await database.connect();
 });
 
 client.on('interactionCreate', async interaction => {
@@ -52,6 +54,12 @@ client.on('interactionCreate', async interaction => {
 
     try {
         await command.execute(interaction);
+
+        // Log command usage
+        await database.run(
+            'INSERT INTO command_usage (command, user_id, guild_id) VALUES (?, ?, ?)',
+            [interaction.commandName, interaction.user.id, interaction.guildId]
+        );
     } catch (error) {
         logger.error('Command execution error:', error);
         await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
