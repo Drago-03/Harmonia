@@ -5,6 +5,7 @@
   "activityAppId": "YOUR_ACTIVITY_APP_ID",
   "spotifyClientId": "YOUR_SPOTIFY_CLIENT_ID",
   "spotifyClientSecret": "YOUR_SPOTIFY_CLIENT_SECRET",
+  "spotifyRedirectUri": "YOUR_SPOTIFY_REDIRECT_URI",
   "maxParticipants": {
     "default": 5,
     "premium": 20
