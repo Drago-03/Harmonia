@@ -16,4 +16,3 @@ env/
 # Logs and databases
 *.sqlite3
 *.db
-*.log
