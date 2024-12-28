@@ -31,6 +31,13 @@ const client = new Client({
 });
 
 client.commands = new Collection();
+const commandsPath = join(__dirname, 'commands');
+const commandFiles = readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+    const command = await import(join(commandsPath, file));
+    client.commands.set(command.default.data.name, command.default);
+}
 
 client.once('ready', () => {
     logger.info('Bot is ready!');
