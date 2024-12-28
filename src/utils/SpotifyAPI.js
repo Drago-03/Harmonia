@@ -28,31 +28,58 @@ class SpotifyAPI {
         return this.token;
     }
 
-    async getUserTopArtists() {
-        const token = await this.getToken();
-        const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        return response.data.items;
+    getAuthUrl() {
+        const scopes = 'user-read-private user-read-email user-top-read playlist-read-private user-library-read';
+        return `https://accounts.spotify.com/authorize?response_type=code&client_id=${CONFIG.SPOTIFY_CLIENT_ID}&scope=${encodeURIComponent(scopes)}&redirect_uri=${encodeURIComponent(CONFIG.SPOTIFY_REDIRECT_URI)}`;
     }
 
-    async getUserTopTracks() {
-        const token = await this.getToken();
-        const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+    async getAccessToken(code) {
+        const response = await axios.post('https://accounts.spotify.com/api/token', new URLSearchParams({
+            grant_type: 'authorization_code',
+            code: code,
+            redirect_uri: CONFIG.SPOTIFY_REDIRECT_URI,
+            client_id: CONFIG.SPOTIFY_CLIENT_ID,
+            client_secret: CONFIG.SPOTIFY_CLIENT_SECRET
+        }), {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/x-www-form-urlencoded'
             }
         });
-        return response.data.items;
+
+        return response.data;
     }
 
-    async getUserPlaylists() {
-        const token = await this.getToken();
+    async getUserData(accessToken) {
+        const response = await axios.get('https://api.spotify.com/v1/me', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        return response.data;
+    }
+
+    async getUserPlaylists(accessToken) {
         const response = await axios.get('https://api.spotify.com/v1/me/playlists', {
             headers: {
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        return response.data.items;
+    }
+
+    async getUserTopTracks(accessToken) {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/tracks', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+        return response.data.items;
+    }
+
+    async getUserTopArtists(accessToken) {
+        const response = await axios.get('https://api.spotify.com/v1/me/top/artists', {
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
             }
         });
         return response.data.items;
